@@ -7,7 +7,7 @@ supporting multiple data sources including Alpha Vantage, CoinGecko, and others.
 
 from typing import Annotated
 from datetime import datetime
-from .alpha_vantage_common import _make_api_request, format_datetime_for_api
+from .alpha_vantage_common import _make_api_request
 import pandas as pd
 from io import StringIO
 
@@ -41,8 +41,12 @@ def get_crypto_price_alpha_vantage(
     # Alpha Vantage uses DIGITAL_CURRENCY_DAILY for crypto
     csv_data = _make_api_request("DIGITAL_CURRENCY_DAILY", params)
     
+    # Check if we got valid data
+    if not csv_data or csv_data.strip() == "":
+        return f"No data available for {symbol}/{market}"
+    
     # Filter by date range if provided
-    if start_date and end_date and csv_data:
+    if start_date and end_date:
         try:
             df = pd.read_csv(StringIO(csv_data))
             if 'timestamp' in df.columns:
@@ -86,6 +90,10 @@ def get_crypto_intraday_alpha_vantage(
     }
     
     csv_data = _make_api_request("CRYPTO_INTRADAY", params)
+    
+    # Check if we got valid data
+    if not csv_data or csv_data.strip() == "":
+        return f"No intraday data available for {symbol}/{market} at {interval} interval"
     
     # Add header information
     header = f"# Intraday cryptocurrency data for {symbol.upper()}/{market.upper()}\n"
