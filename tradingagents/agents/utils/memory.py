@@ -1,25 +1,58 @@
 import chromadb
 from chromadb.config import Settings
 from openai import OpenAI
+import time
+import random
 
 
 class FinancialSituationMemory:
     def __init__(self, name, config):
-        if config["backend_url"] == "http://localhost:11434/v1":
-            self.embedding = "nomic-embed-text"
+        self.llm_provider = config.get("llm_provider", "openai").lower()
+        self.max_retries = 3
+        self.base_delay = 1  # seconds
+        
+        if self.llm_provider == "google":
+            # Use Google embeddings via LangChain
+            try:
+                from langchain_google_genai import GoogleGenerativeAIEmbeddings
+                self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+            except ImportError:
+                raise ImportError("langchain-google-genai is required for Google embeddings. Install with: pip install langchain-google-genai")
+            self.client = None
         else:
-            self.embedding = "text-embedding-3-small"
-        self.client = OpenAI(base_url=config["backend_url"])
+            # Use OpenAI embeddings
+            if config["backend_url"] == "http://localhost:11434/v1":
+                self.embedding = "nomic-embed-text"
+            else:
+                self.embedding = "text-embedding-3-small"
+            self.client = OpenAI(base_url=config["backend_url"])
+            self.embeddings = None
+        
         self.chroma_client = chromadb.Client(Settings(allow_reset=True))
-        self.situation_collection = self.chroma_client.create_collection(name=name)
+        self.situation_collection = self.chroma_client.get_or_create_collection(name=name)
 
     def get_embedding(self, text):
-        """Get OpenAI embedding for a text"""
+        """Get embedding for a text using the configured provider with retry logic"""
         
-        response = self.client.embeddings.create(
-            model=self.embedding, input=text
-        )
-        return response.data[0].embedding
+        for attempt in range(self.max_retries):
+            try:
+                if self.llm_provider == "google":
+                    return self.embeddings.embed_query(text)
+                else:
+                    response = self.client.embeddings.create(
+                        model=self.embedding, input=text
+                    )
+                    return response.data[0].embedding
+            except Exception as e:
+                if "429" in str(e) or "rate" in str(e).lower():
+                    if attempt < self.max_retries - 1:
+                        delay = self.base_delay * (2 ** attempt) + random.uniform(0, 1)
+                        print(f"Rate limited. Retrying in {delay:.1f}s... (Attempt {attempt + 1}/{self.max_retries})")
+                        time.sleep(delay)
+                    else:
+                        raise
+                else:
+                    raise
 
     def add_situations(self, situations_and_advice):
         """Add financial situations and their corresponding advice. Parameter is a list of tuples (situation, rec)"""
@@ -69,7 +102,10 @@ class FinancialSituationMemory:
 
 if __name__ == "__main__":
     # Example usage
-    matcher = FinancialSituationMemory()
+    from tradingagents.default_config import DEFAULT_CONFIG
+    
+    config = DEFAULT_CONFIG.copy()
+    matcher = FinancialSituationMemory("test_memory", config)
 
     # Example data
     example_data = [
