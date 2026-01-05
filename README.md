@@ -129,6 +129,38 @@ cp .env.example .env
 
 **Note:** We are happy to partner with Alpha Vantage to provide robust API support for TradingAgents. You can get a free AlphaVantage API [here](https://www.alphavantage.co/support/#api-key), TradingAgents-sourced requests also have increased rate limits to 60 requests per minute with no daily limits. Typically the quota is sufficient for performing complex tasks with TradingAgents thanks to Alpha Vantage’s open-source support program. If you prefer to use OpenAI for these data sources instead, you can modify the data vendor settings in `tradingagents/default_config.py`.
 
+### Cryptocurrency Support
+
+TradingAgents now supports cryptocurrency trading analysis! You can analyze Bitcoin, Ethereum, and other major cryptocurrencies using the same multi-agent framework.
+
+**Supported Cryptocurrencies:**
+- Bitcoin (BTC), Ethereum (ETH), and 30+ major cryptocurrencies
+- Real-time and historical price data
+- Market sentiment analysis from news sources
+
+**Usage Example:**
+```bash
+python -m cli.main
+# When prompted for ticker, enter: BTC (for Bitcoin) or ETH (for Ethereum)
+```
+
+**Python API Example:**
+```python
+from tradingagents.graph.trading_graph import TradingAgentsGraph
+from tradingagents.default_config import DEFAULT_CONFIG
+
+config = DEFAULT_CONFIG.copy()
+config["crypto_settings"]["default_market"] = "USD"
+
+ta = TradingAgentsGraph(debug=True, config=config)
+
+# Analyze Bitcoin
+_, decision = ta.propagate("BTC", "2024-05-10")
+print(decision)
+```
+
+The framework automatically detects cryptocurrency symbols and uses appropriate data sources. All analyst agents (technical, sentiment, news, fundamentals where applicable) work seamlessly with crypto assets.
+
 ### CLI Usage
 
 You can also try out the CLI directly by running:
