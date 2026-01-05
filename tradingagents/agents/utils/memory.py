@@ -21,7 +21,7 @@ class FinancialSituationMemory:
             self.client = None
         else:
             # Use OpenAI embeddings
-            if config["backend_url"] == "http://localhost:11434/v1":
+            if self.llm_provider == "ollama":
                 # Ollama - local inference, use dummy API key
                 self.embedding = "nomic-embed-text"
                 self.client = OpenAI(base_url=config["backend_url"], api_key="ollama")

@@ -26,7 +26,7 @@ def check_ollama_connection():
         import requests
         response = requests.get("http://localhost:11434/api/tags", timeout=5)
         return response.status_code == 200
-    except:
+    except (ImportError, requests.exceptions.RequestException, Exception):
         return False
 
 
