@@ -1,9 +1,15 @@
 import time
 import json
 
+from tradingagents.utils.context_budget import budget_from_config, truncate_text_tail, truncate_text_middle
+from tradingagents.dataflows.config import get_config
+
 
 def create_research_manager(llm, memory):
     def research_manager_node(state) -> dict:
+        config = get_config()
+        budget = budget_from_config(config)
+
         history = state["investment_debate_state"].get("history", "")
         market_research_report = state["market_report"]
         sentiment_report = state["sentiment_report"]
@@ -18,6 +24,12 @@ def create_research_manager(llm, memory):
         past_memory_str = ""
         for i, rec in enumerate(past_memories, 1):
             past_memory_str += rec["recommendation"] + "\n\n"
+
+        # Keep recent debate turns; clamp reflections to fit.
+        history = truncate_text_tail(history, max(1, budget.content_budget_tokens * 7 // 10))
+        past_memory_str = truncate_text_middle(
+            past_memory_str, max(1, budget.content_budget_tokens * 2 // 10)
+        )
 
         prompt = f"""As the portfolio manager and debate facilitator, your role is to critically evaluate this round of debate and make a definitive decision: align with the bear analyst, the bull analyst, or choose Hold only if it is strongly justified based on the arguments presented.
 

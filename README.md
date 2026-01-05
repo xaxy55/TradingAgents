@@ -267,6 +267,12 @@ config["deep_think_llm"] = "gpt-4.1-nano"  # Use a different model
 config["quick_think_llm"] = "gpt-4.1-nano"  # Use a different model
 config["max_debate_rounds"] = 1  # Increase debate rounds
 
+# If you hit "input length exceeds the context length" errors, lower these
+# (or increase them if your model supports a larger context window).
+config["llm_max_input_tokens"] = 12000
+config["llm_reserved_output_tokens"] = 2048
+config["embedding_max_input_tokens"] = 6000
+
 # Configure data vendors (default uses yfinance and Alpha Vantage)
 config["data_vendors"] = {
     "core_stock_apis": "yfinance",           # Options: yfinance, alpha_vantage, local

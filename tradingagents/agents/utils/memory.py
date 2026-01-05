@@ -4,9 +4,12 @@ from openai import OpenAI
 import time
 import random
 
+from tradingagents.utils.context_budget import truncate_text_middle
+
 
 class FinancialSituationMemory:
     def __init__(self, name, config):
+        self.config = config
         self.llm_provider = config.get("llm_provider", "openai").lower()
         self.max_retries = 3
         self.base_delay = 1  # seconds
@@ -36,6 +39,16 @@ class FinancialSituationMemory:
 
     def get_embedding(self, text):
         """Get embedding for a text using the configured provider with retry logic"""
+
+        # Embedding endpoints have their own input limits; keep this conservative.
+        max_embed_tokens = 6000
+        try:
+            # Allow overriding via config if present.
+            max_embed_tokens = int(getattr(self, "config", {}).get("embedding_max_input_tokens", max_embed_tokens))
+        except Exception:
+            pass
+
+        text = truncate_text_middle(text, max_embed_tokens)
         
         for attempt in range(self.max_retries):
             try:

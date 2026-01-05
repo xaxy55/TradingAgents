@@ -2,9 +2,15 @@ from langchain_core.messages import AIMessage
 import time
 import json
 
+from tradingagents.utils.context_budget import budget_from_config, clamp_many_blocks, truncate_text_tail
+from tradingagents.dataflows.config import get_config
+
 
 def create_bull_researcher(llm, memory):
     def bull_node(state) -> dict:
+        config = get_config()
+        budget = budget_from_config(config)
+
         investment_debate_state = state["investment_debate_state"]
         asset_type = state.get("asset_type", "stock")
         history = investment_debate_state.get("history", "")
@@ -22,6 +28,21 @@ def create_bull_researcher(llm, memory):
         past_memory_str = ""
         for i, rec in enumerate(past_memories, 1):
             past_memory_str += rec["recommendation"] + "\n\n"
+
+        # Clamp oversized prompt inputs.
+        clamped = clamp_many_blocks(
+            [
+                ("market", market_research_report),
+                ("sentiment", sentiment_report),
+                ("news", news_report),
+                ("fundamentals", fundamentals_report),
+                ("past", past_memory_str),
+            ],
+            total_tokens=max(1, budget.content_budget_tokens * 7 // 10),
+        )
+        # Keep the most recent debate turns.
+        history = truncate_text_tail(history, max(1, budget.content_budget_tokens * 2 // 10))
+        current_response = truncate_text_tail(current_response, max(1, budget.content_budget_tokens // 10))
 
         # Adjust prompt based on asset type
         if asset_type == "cryptocurrency":
@@ -49,13 +70,13 @@ Key points to focus on:
 - Engagement: Present your argument in a conversational style, engaging directly with the bear analyst's points and debating effectively rather than just listing data.{additional_guidance}
 
 Resources available:
-Market research report: {market_research_report}
-Social media sentiment report: {sentiment_report}
-Latest world affairs news: {news_report}
-{"Company fundamentals report" if asset_type == "stock" else "Project analysis"}: {fundamentals_report}
+Market research report: {clamped['market']}
+Social media sentiment report: {clamped['sentiment']}
+Latest world affairs news: {clamped['news']}
+{"Company fundamentals report" if asset_type == "stock" else "Project analysis"}: {clamped['fundamentals']}
 Conversation history of the debate: {history}
 Last bear argument: {current_response}
-Reflections from similar situations and lessons learned: {past_memory_str}
+Reflections from similar situations and lessons learned: {clamped['past']}
 Use this information to deliver a compelling bull argument, refute the bear's concerns, and engage in a dynamic debate that demonstrates the strengths of the bull position. You must also address reflections and learn from lessons and mistakes you made in the past.
 """
 

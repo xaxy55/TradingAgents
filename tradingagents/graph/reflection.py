@@ -3,6 +3,9 @@
 from typing import Dict, Any
 from langchain_openai import ChatOpenAI
 
+from tradingagents.utils.context_budget import budget_from_config, clamp_many_blocks
+from tradingagents.dataflows.config import get_config
+
 
 class Reflector:
     """Handles reflection on decisions and updating memory."""
@@ -59,11 +62,21 @@ Adhere strictly to these instructions, and ensure your output is detailed, accur
         self, component_type: str, report: str, situation: str, returns_losses
     ) -> str:
         """Generate reflection for a component."""
+        config = get_config()
+        budget = budget_from_config(config)
+        blocks = clamp_many_blocks(
+            [
+                ("report", report),
+                ("situation", situation),
+                ("returns", str(returns_losses)),
+            ],
+            total_tokens=budget.content_budget_tokens,
+        )
         messages = [
             ("system", self.reflection_system_prompt),
             (
                 "human",
-                f"Returns: {returns_losses}\n\nAnalysis/Decision: {report}\n\nObjective Market Reports for Reference: {situation}",
+                f"Returns: {blocks['returns']}\n\nAnalysis/Decision: {blocks['report']}\n\nObjective Market Reports for Reference: {blocks['situation']}",
             ),
         ]
 
