@@ -6,6 +6,7 @@ import json
 def create_safe_debator(llm):
     def safe_node(state) -> dict:
         risk_debate_state = state["risk_debate_state"]
+        asset_type = state.get("asset_type", "stock")
         history = risk_debate_state.get("history", "")
         safe_history = risk_debate_state.get("safe_history", "")
 
@@ -19,7 +20,22 @@ def create_safe_debator(llm):
 
         trader_decision = state["trader_investment_plan"]
 
-        prompt = f"""As the Safe/Conservative Risk Analyst, your primary objective is to protect assets, minimize volatility, and ensure steady, reliable growth. You prioritize stability, security, and risk mitigation, carefully assessing potential losses, economic downturns, and market volatility. When evaluating the trader's decision or plan, critically examine high-risk elements, pointing out where the decision may expose the firm to undue risk and where more cautious alternatives could secure long-term gains. Here is the trader's decision:
+        # Add crypto-specific risk considerations
+        crypto_guidance = ""
+        if asset_type == "cryptocurrency":
+            crypto_guidance = """
+
+**CRYPTOCURRENCY CONSERVATIVE PERSPECTIVE:**
+As you advocate for conservative positions in cryptocurrency:
+- Emphasize the extreme volatility and potential for significant losses
+- Highlight regulatory uncertainty that could impact prices dramatically
+- Point out historical crashes and prolonged bear markets in crypto
+- Note the lack of traditional fundamentals making valuation difficult
+- Consider security risks including exchange hacks and smart contract vulnerabilities
+- Stress the importance of smaller position sizes given the high-risk nature
+- Recommend stop-losses and risk management tools given 24/7 trading"""
+
+        prompt = f"""As the Safe/Conservative Risk Analyst, your primary objective is to protect assets, minimize volatility, and ensure steady, reliable growth. You prioritize stability, security, and risk mitigation, carefully assessing potential losses, economic downturns, and market volatility. When evaluating the trader's decision or plan, critically examine high-risk elements, pointing out where the decision may expose the firm to undue risk and where more cautious alternatives could secure long-term gains.{crypto_guidance} Here is the trader's decision:
 
 {trader_decision}
 
@@ -28,7 +44,7 @@ Your task is to actively counter the arguments of the Risky and Neutral Analysts
 Market Research Report: {market_research_report}
 Social Media Sentiment Report: {sentiment_report}
 Latest World Affairs Report: {news_report}
-Company Fundamentals Report: {fundamentals_report}
+{"Company Fundamentals Report" if asset_type == "stock" else "Project Analysis"}: {fundamentals_report}
 Here is the current conversation history: {history} Here is the last response from the risky analyst: {current_risky_response} Here is the last response from the neutral analyst: {current_neutral_response}. If there are no responses from the other viewpoints, do not halluncinate and just present your point.
 
 Engage by questioning their optimism and emphasizing the potential downsides they may have overlooked. Address each of their counterpoints to showcase why a conservative stance is ultimately the safest path for the firm's assets. Focus on debating and critiquing their arguments to demonstrate the strength of a low-risk strategy over their approaches. Output conversationally as if you are speaking without any special formatting."""
