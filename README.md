@@ -114,10 +114,25 @@ pip install -r requirements.txt
 
 ### Required APIs
 
-You will need the OpenAI API for all the agents, and [Alpha Vantage API](https://www.alphavantage.co/support/#api-key) for fundamental and news data (default configuration).
+You will need an LLM API for all the agents, and [Alpha Vantage API](https://www.alphavantage.co/support/#api-key) for fundamental and news data (default configuration).
 
+**Option 1: OpenAI (Cloud)**
 ```bash
 export OPENAI_API_KEY=$YOUR_OPENAI_API_KEY
+export ALPHA_VANTAGE_API_KEY=$YOUR_ALPHA_VANTAGE_API_KEY
+```
+
+**Option 2: Google Gemini (Cloud)**
+```bash
+export GOOGLE_API_KEY=$YOUR_GOOGLE_API_KEY
+export ALPHA_VANTAGE_API_KEY=$YOUR_ALPHA_VANTAGE_API_KEY
+```
+
+**Option 3: Ollama (Local - No API Key Required)**
+```bash
+# Install Ollama from https://ollama.ai
+ollama pull llama3.1
+# Set only Alpha Vantage API key for market data
 export ALPHA_VANTAGE_API_KEY=$YOUR_ALPHA_VANTAGE_API_KEY
 ```
 
@@ -173,7 +188,29 @@ ta = TradingAgentsGraph(debug=True, config=config)
 _, decision = ta.propagate("BTC", "2024-05-10")
 ```
 
-The framework automatically detects cryptocurrency symbols and uses appropriate data sources. All analyst agents (technical, sentiment, news, fundamentals where applicable) work seamlessly with crypto assets. **Supports multiple LLM providers**: OpenAI, Google Gemini, Anthropic Claude, and more.
+**Using Ollama (Local LLM) for Crypto Analysis:**
+```python
+config = copy.deepcopy(DEFAULT_CONFIG)
+config["llm_provider"] = "ollama"
+config["backend_url"] = "http://localhost:11434/v1"
+config["deep_think_llm"] = "llama3.1"
+config["quick_think_llm"] = "llama3.1"
+config["crypto_settings"]["default_market"] = "USD"
+
+ta = TradingAgentsGraph(debug=True, config=config)
+_, decision = ta.propagate("BTC", "2024-05-10")
+```
+
+**Run example:**
+```bash
+# For OpenAI or Gemini
+python example_crypto.py
+
+# For Ollama (local LLM)
+python example_crypto_ollama.py
+```
+
+The framework automatically detects cryptocurrency symbols and uses appropriate data sources. All analyst agents (technical, sentiment, news, fundamentals where applicable) work seamlessly with crypto assets. **Supports multiple LLM providers**: OpenAI, Google Gemini, Anthropic Claude, Ollama (local), and more.
 
 ### CLI Usage
 
