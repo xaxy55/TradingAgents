@@ -26,7 +26,7 @@ def get_backend_url(provider: str) -> str:
 def get_ticker() -> str:
     """Prompt the user to enter a ticker symbol."""
     ticker = questionary.text(
-        "Enter the ticker symbol to analyze:",
+        "Enter the ticker symbol to analyze (e.g., AAPL, NVDA for stocks or BTC, ETH for crypto):",
         validate=lambda x: len(x.strip()) > 0 or "Please enter a valid ticker symbol.",
         style=questionary.Style(
             [

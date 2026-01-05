@@ -410,6 +410,8 @@ def get_user_selections(
     # Create welcome box content
     welcome_content = f"{welcome_ascii}\n"
     welcome_content += "[bold green]TradingAgents: Multi-Agents LLM Financial Trading Framework - CLI[/bold green]\n\n"
+    welcome_content += "[bold]Supports both Stocks and Cryptocurrencies![/bold]\n"
+    welcome_content += "Analyze stocks (AAPL, NVDA, SPY) or cryptocurrencies (BTC, ETH, SOL)\n\n"
     welcome_content += "[bold]Workflow Steps:[/bold]\n"
     welcome_content += "I. Analyst Team → II. Research Team → III. Trader → IV. Risk Management → V. Portfolio Management\n\n"
     welcome_content += (
@@ -438,10 +440,20 @@ def get_user_selections(
     # Step 1: Ticker symbol
     console.print(
         create_question_box(
-            "Step 1: Ticker Symbol", "Enter the ticker symbol to analyze", "SPY"
+            "Step 1: Ticker Symbol", 
+            "Enter the ticker symbol to analyze (e.g., AAPL for stocks, BTC for Bitcoin, ETH for Ethereum)",
+            "SPY"
         )
     )
     selected_ticker = ticker if ticker else get_ticker()
+    
+    # Detect and display asset type
+    from tradingagents.dataflows.crypto_dataflows import is_crypto_symbol
+    asset_type = "cryptocurrency" if is_crypto_symbol(selected_ticker) else "stock"
+    asset_emoji = "₿" if asset_type == "cryptocurrency" else "📈"
+    console.print(
+        f"[cyan]{asset_emoji} Detected asset type:[/cyan] [bold yellow]{asset_type.upper()}[/bold yellow]"
+    )
 
     # Step 2: Analysis date
     default_date = datetime.datetime.now().strftime("%Y-%m-%d")
