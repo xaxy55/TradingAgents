@@ -16,6 +16,10 @@ from .alpha_vantage import (
     get_news as get_alpha_vantage_news
 )
 from .alpha_vantage_common import AlphaVantageRateLimitError
+from .crypto_dataflows import (
+    get_crypto_price_alpha_vantage,
+    get_crypto_intraday_alpha_vantage,
+)
 
 # Configuration and routing logic
 from .config import get_config
@@ -50,6 +54,13 @@ TOOLS_CATEGORIES = {
             "get_global_news",
             "get_insider_sentiment",
             "get_insider_transactions",
+        ]
+    },
+    "cryptocurrency_data": {
+        "description": "Cryptocurrency price and market data",
+        "tools": [
+            "get_crypto_price",
+            "get_crypto_intraday",
         ]
     }
 }
@@ -113,6 +124,13 @@ VENDOR_METHODS = {
         "alpha_vantage": get_alpha_vantage_insider_transactions,
         "yfinance": get_yfinance_insider_transactions,
         "local": get_finnhub_company_insider_transactions,
+    },
+    # cryptocurrency_data
+    "get_crypto_price": {
+        "alpha_vantage": get_crypto_price_alpha_vantage,
+    },
+    "get_crypto_intraday": {
+        "alpha_vantage": get_crypto_intraday_alpha_vantage,
     },
 }
 

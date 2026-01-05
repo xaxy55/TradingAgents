@@ -10,6 +10,18 @@ ANALYST_ORDER = [
     ("Fundamentals Analyst", AnalystType.FUNDAMENTALS),
 ]
 
+# Mapping of provider names to backend URLs
+PROVIDER_URLS = {
+    "openai": "https://api.openai.com/v1",
+    "anthropic": "https://api.anthropic.com/",
+    "google": "https://generativelanguage.googleapis.com/v1",
+    "openrouter": "https://openrouter.ai/api/v1",
+    "ollama": "http://localhost:11434/v1",
+}
+
+def get_backend_url(provider: str) -> str:
+    """Get backend URL for a given provider name."""
+    return PROVIDER_URLS.get(provider.lower(), "https://api.openai.com/v1")
 
 def get_ticker() -> str:
     """Prompt the user to enter a ticker symbol."""
