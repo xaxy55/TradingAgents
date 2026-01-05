@@ -228,6 +228,8 @@ if __name__ == "__main__":
     # Add requests to dependencies check
     try:
         import requests
+        # Access an attribute to ensure the import is considered "used"
+        _ = requests.__version__
     except ImportError:
         print("\n⚠️  Missing 'requests' library!")
         print("Install it with: pip install requests")
