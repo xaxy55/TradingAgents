@@ -22,10 +22,11 @@ class FinancialSituationMemory:
         else:
             # Use OpenAI embeddings
             if config["backend_url"] == "http://localhost:11434/v1":
+                # Ollama - local inference, use dummy API key
                 self.embedding = "nomic-embed-text"
-                # For Ollama, use a dummy API key
                 self.client = OpenAI(base_url=config["backend_url"], api_key="ollama")
             else:
+                # OpenAI or OpenRouter - will use OPENAI_API_KEY or OPENROUTER_API_KEY env var
                 self.embedding = "text-embedding-3-small"
                 self.client = OpenAI(base_url=config["backend_url"])
             self.embeddings = None

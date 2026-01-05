@@ -73,7 +73,8 @@ class TradingAgentsGraph:
 
         # Initialize LLMs
         if self.config["llm_provider"].lower() == "openai" or self.config["llm_provider"] == "ollama" or self.config["llm_provider"] == "openrouter":
-            # For Ollama, use a dummy API key since it doesn't require authentication
+            # Ollama uses dummy API key (local inference, no authentication needed)
+            # OpenAI and OpenRouter will use OPENAI_API_KEY or OPENROUTER_API_KEY env vars when api_key=None
             api_key = "ollama" if self.config["llm_provider"] == "ollama" else None
             self.deep_thinking_llm = ChatOpenAI(model=self.config["deep_think_llm"], base_url=self.config["backend_url"], api_key=api_key)
             self.quick_thinking_llm = ChatOpenAI(model=self.config["quick_think_llm"], base_url=self.config["backend_url"], api_key=api_key)
