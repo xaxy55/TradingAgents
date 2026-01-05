@@ -23,9 +23,11 @@ class FinancialSituationMemory:
             # Use OpenAI embeddings
             if config["backend_url"] == "http://localhost:11434/v1":
                 self.embedding = "nomic-embed-text"
+                # For Ollama, use a dummy API key
+                self.client = OpenAI(base_url=config["backend_url"], api_key="ollama")
             else:
                 self.embedding = "text-embedding-3-small"
-            self.client = OpenAI(base_url=config["backend_url"])
+                self.client = OpenAI(base_url=config["backend_url"])
             self.embeddings = None
         
         self.chroma_client = chromadb.Client(Settings(allow_reset=True))
