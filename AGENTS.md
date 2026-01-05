@@ -18,7 +18,7 @@ TradingAgents/
 │   │   ├── analysts/           # Fundamental, sentiment, news, technical analysts
 │   │   ├── researchers/        # Bull and bear researchers
 │   │   ├── managers/           # Risk and portfolio managers
-│   │   ├── traders/            # Trading decision agents
+│   │   ├── trader/             # Trading decision agents
 │   │   └── utils/              # Agent utilities and tools
 │   ├── dataflows/              # Data fetching and processing
 │   │   └── data_cache/         # Cached data
