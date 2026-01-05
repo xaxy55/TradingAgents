@@ -5,6 +5,7 @@ This example demonstrates how to use TradingAgents to analyze
 cryptocurrencies like Bitcoin and Ethereum.
 """
 
+import copy
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 from dotenv import load_dotenv
@@ -25,7 +26,7 @@ def analyze_crypto(symbol, date):
     print('='*60)
     
     # Create configuration for crypto analysis
-    config = DEFAULT_CONFIG.copy()
+    config = copy.deepcopy(DEFAULT_CONFIG)
     config["deep_think_llm"] = "gpt-4o-mini"
     config["quick_think_llm"] = "gpt-4o-mini"
     config["max_debate_rounds"] = 1
@@ -88,14 +89,14 @@ def main():
     print("="*60)
     
     # Note: Using a past date for reproducibility
-    btc_decision = analyze_crypto("BTC", "2024-05-10")
+    analyze_crypto("BTC", "2024-05-10")
     
     # Example 2: Analyze Ethereum
     print("\n\n" + "="*60)
     print("EXAMPLE 2: Ethereum (ETH) Analysis")
     print("="*60)
     
-    eth_decision = analyze_crypto("ETH", "2024-05-10")
+    analyze_crypto("ETH", "2024-05-10")
     
     # Summary
     print("\n\n" + "="*60)

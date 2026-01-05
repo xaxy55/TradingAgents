@@ -146,10 +146,11 @@ python -m cli.main
 
 **Python API Example:**
 ```python
+import copy
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 
-config = DEFAULT_CONFIG.copy()
+config = copy.deepcopy(DEFAULT_CONFIG)
 config["crypto_settings"]["default_market"] = "USD"
 
 ta = TradingAgentsGraph(debug=True, config=config)

@@ -35,11 +35,12 @@ The framework will automatically detect that it's a cryptocurrency and use the a
 ### Using Python API
 
 ```python
+import copy
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 
 # Configure for crypto analysis
-config = DEFAULT_CONFIG.copy()
+config = copy.deepcopy(DEFAULT_CONFIG)
 config["crypto_settings"]["default_market"] = "USD"
 config["data_vendors"]["cryptocurrency_data"] = "alpha_vantage"
 

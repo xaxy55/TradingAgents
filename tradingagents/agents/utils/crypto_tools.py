@@ -8,6 +8,7 @@ cryptocurrency markets.
 from langchain_core.tools import tool
 from typing import Annotated
 from tradingagents.dataflows.interface import route_to_vendor
+from tradingagents.dataflows.crypto_dataflows import is_crypto_symbol
 
 
 @tool
@@ -86,8 +87,6 @@ def detect_asset_type(
         - detect_asset_type("BTC") returns "cryptocurrency"
         - detect_asset_type("AAPL") returns "stock"
     """
-    from tradingagents.dataflows.crypto_dataflows import is_crypto_symbol
-    
     if is_crypto_symbol(symbol):
         return "cryptocurrency"
     else:
