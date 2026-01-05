@@ -6,6 +6,7 @@ import json
 def create_trader(llm, memory):
     def trader_node(state, name):
         company_name = state["company_of_interest"]
+        asset_type = state.get("asset_type", "stock")
         investment_plan = state["investment_plan"]
         market_research_report = state["market_report"]
         sentiment_report = state["sentiment_report"]
@@ -22,15 +23,32 @@ def create_trader(llm, memory):
         else:
             past_memory_str = "No past memories found."
 
+        # Build context based on asset type
+        if asset_type == "cryptocurrency":
+            asset_description = f"cryptocurrency {company_name}"
+            trading_guidance = """
+
+**CRYPTOCURRENCY TRADING CONSIDERATIONS:**
+- 24/7 Market: Unlike stocks, crypto trades continuously. Consider timing across global time zones
+- High Volatility: Cryptocurrencies can move 10-20% or more in a day. Adjust position sizing accordingly
+- Liquidity: Ensure the crypto has sufficient trading volume on major exchanges
+- No Circuit Breakers: Crypto markets don't have trading halts like stock markets
+- Regulatory Risk: Be conservative given potential regulatory announcements
+- Technical Analysis: Often more relevant than fundamentals for crypto trading
+- Sentiment-Driven: Social sentiment and news have outsized impact on crypto prices"""
+        else:
+            asset_description = f"company {company_name}"
+            trading_guidance = ""
+
         context = {
             "role": "user",
-            "content": f"Based on a comprehensive analysis by a team of analysts, here is an investment plan tailored for {company_name}. This plan incorporates insights from current technical market trends, macroeconomic indicators, and social media sentiment. Use this plan as a foundation for evaluating your next trading decision.\n\nProposed Investment Plan: {investment_plan}\n\nLeverage these insights to make an informed and strategic decision.",
+            "content": f"Based on a comprehensive analysis by a team of analysts, here is an investment plan tailored for the {asset_description}. This plan incorporates insights from current technical market trends, macroeconomic indicators, and social media sentiment. Use this plan as a foundation for evaluating your next trading decision.\n\nProposed Investment Plan: {investment_plan}\n\nLeverage these insights to make an informed and strategic decision.{trading_guidance}",
         }
 
         messages = [
             {
                 "role": "system",
-                "content": f"""You are a trading agent analyzing market data to make investment decisions. Based on your analysis, provide a specific recommendation to buy, sell, or hold. End with a firm decision and always conclude your response with 'FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL**' to confirm your recommendation. Do not forget to utilize lessons from past decisions to learn from your mistakes. Here is some reflections from similar situatiosn you traded in and the lessons learned: {past_memory_str}""",
+                "content": f"""You are a trading agent analyzing market data to make investment decisions for a {asset_type}. Based on your analysis, provide a specific recommendation to buy, sell, or hold. End with a firm decision and always conclude your response with 'FINAL TRANSACTION PROPOSAL: **BUY/HOLD/SELL**' to confirm your recommendation. Do not forget to utilize lessons from past decisions to learn from your mistakes. Here is some reflections from similar situations you traded in and the lessons learned: {past_memory_str}""",
             },
             context,
         ]

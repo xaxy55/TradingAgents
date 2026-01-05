@@ -5,6 +5,7 @@ import json
 def create_neutral_debator(llm):
     def neutral_node(state) -> dict:
         risk_debate_state = state["risk_debate_state"]
+        asset_type = state.get("asset_type", "stock")
         history = risk_debate_state.get("history", "")
         neutral_history = risk_debate_state.get("neutral_history", "")
 
@@ -18,7 +19,22 @@ def create_neutral_debator(llm):
 
         trader_decision = state["trader_investment_plan"]
 
-        prompt = f"""As the Neutral Risk Analyst, your role is to provide a balanced perspective, weighing both the potential benefits and risks of the trader's decision or plan. You prioritize a well-rounded approach, evaluating the upsides and downsides while factoring in broader market trends, potential economic shifts, and diversification strategies.Here is the trader's decision:
+        # Add crypto-specific risk considerations
+        crypto_guidance = ""
+        if asset_type == "cryptocurrency":
+            crypto_guidance = """
+
+**CRYPTOCURRENCY BALANCED PERSPECTIVE:**
+As you provide a balanced view on cryptocurrency:
+- Acknowledge both the high-growth potential and significant downside risks
+- Consider position sizing that accounts for volatility (e.g., smaller % of portfolio)
+- Evaluate whether technical and sentiment signals align with each other
+- Balance short-term trading opportunities against long-term hold considerations
+- Consider dollar-cost averaging to mitigate timing risk in volatile markets
+- Weigh the innovation potential against regulatory and security concerns
+- Think about diversification within crypto assets if taking exposure"""
+
+        prompt = f"""As the Neutral Risk Analyst, your role is to provide a balanced perspective, weighing both the potential benefits and risks of the trader's decision or plan. You prioritize a well-rounded approach, evaluating the upsides and downsides while factoring in broader market trends, potential economic shifts, and diversification strategies.{crypto_guidance} Here is the trader's decision:
 
 {trader_decision}
 
@@ -27,8 +43,8 @@ Your task is to challenge both the Risky and Safe Analysts, pointing out where e
 Market Research Report: {market_research_report}
 Social Media Sentiment Report: {sentiment_report}
 Latest World Affairs Report: {news_report}
-Company Fundamentals Report: {fundamentals_report}
-Here is the current conversation history: {history} Here is the last response from the risky analyst: {current_risky_response} Here is the last response from the safe analyst: {current_safe_response}. If there are no responses from the other viewpoints, do not halluncinate and just present your point.
+{"Company Fundamentals Report" if asset_type == "stock" else "Project Analysis"}: {fundamentals_report}
+Here is the current conversation history: {history} Here is the last response from the risky analyst: {current_risky_response} Here is the last response from the safe analyst: {current_safe_response}. If there are no responses from the other viewpoints, do not hallucinate and just present your point.
 
 Engage actively by analyzing both sides critically, addressing weaknesses in the risky and conservative arguments to advocate for a more balanced approach. Challenge each of their points to illustrate why a moderate risk strategy might offer the best of both worlds, providing growth potential while safeguarding against extreme volatility. Focus on debating rather than simply presenting data, aiming to show that a balanced view can lead to the most reliable outcomes. Output conversationally as if you are speaking without any special formatting."""
 

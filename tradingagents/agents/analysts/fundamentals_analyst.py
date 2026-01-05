@@ -10,6 +10,7 @@ def create_fundamentals_analyst(llm):
         current_date = state["trade_date"]
         ticker = state["company_of_interest"]
         company_name = state["company_of_interest"]
+        asset_type = state.get("asset_type", "stock")
 
         tools = [
             get_fundamentals,
@@ -18,11 +19,32 @@ def create_fundamentals_analyst(llm):
             get_income_statement,
         ]
 
-        system_message = (
-            "You are a researcher tasked with analyzing fundamental information over the past week about a company. Please write a comprehensive report of the company's fundamental information such as financial documents, company profile, basic company financials, and company financial history to gain a full view of the company's fundamental information to inform traders. Make sure to include as much detail as possible. Do not simply state the trends are mixed, provide detailed and finegrained analysis and insights that may help traders make decisions."
-            + " Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."
-            + " Use the available tools: `get_fundamentals` for comprehensive company analysis, `get_balance_sheet`, `get_cashflow`, and `get_income_statement` for specific financial statements.",
-        )
+        # Different approach for cryptocurrency vs stock
+        if asset_type == "cryptocurrency":
+            system_message = (
+                "You are analyzing a cryptocurrency asset. Unlike traditional stocks, cryptocurrencies do not have conventional fundamental data such as earnings, balance sheets, or cash flows. "
+                "Instead, provide analysis based on available information about the cryptocurrency project:\n\n"
+                "**CRYPTOCURRENCY FUNDAMENTAL ANALYSIS:**\n"
+                "Since traditional financial tools are not applicable to cryptocurrencies, focus your analysis on:\n"
+                "1. **Project Overview**: What problem does this cryptocurrency solve? What is its use case?\n"
+                "2. **Technology & Development**: Quality of the blockchain technology, development activity, and technical innovation\n"
+                "3. **Network Metrics**: If available through news or general knowledge - transaction volume, active addresses, network growth\n"
+                "4. **Tokenomics**: Supply dynamics (max supply, circulating supply, inflation rate), distribution, and token utility\n"
+                "5. **Team & Governance**: Development team reputation, governance model, community involvement\n"
+                "6. **Adoption & Partnerships**: Real-world usage, partnerships with companies, integration with other platforms\n"
+                "7. **Competition**: How it compares to similar cryptocurrencies in its category\n"
+                "8. **Market Position**: Market capitalization rank, liquidity on exchanges\n\n"
+                "Note: The traditional financial statement tools (get_balance_sheet, get_cashflow, get_income_statement) will not return meaningful data for cryptocurrencies. "
+                "You may skip calling these tools or acknowledge they are not applicable. "
+                "Focus on qualitative analysis based on publicly available information about the cryptocurrency project. "
+                "Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."
+            )
+        else:
+            system_message = (
+                "You are a researcher tasked with analyzing fundamental information over the past week about a company. Please write a comprehensive report of the company's fundamental information such as financial documents, company profile, basic company financials, and company financial history to gain a full view of the company's fundamental information to inform traders. Make sure to include as much detail as possible. Do not simply state the trends are mixed, provide detailed and finegrained analysis and insights that may help traders make decisions."
+                + " Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."
+                + " Use the available tools: `get_fundamentals` for comprehensive company analysis, `get_balance_sheet`, `get_cashflow`, and `get_income_statement` for specific financial statements.",
+            )
 
         prompt = ChatPromptTemplate.from_messages(
             [

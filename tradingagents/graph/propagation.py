@@ -6,6 +6,7 @@ from tradingagents.agents.utils.agent_states import (
     InvestDebateState,
     RiskDebateState,
 )
+from tradingagents.dataflows.crypto_dataflows import is_crypto_symbol
 
 
 class Propagator:
@@ -19,10 +20,14 @@ class Propagator:
         self, company_name: str, trade_date: str
     ) -> Dict[str, Any]:
         """Create the initial state for the agent graph."""
+        # Detect if this is a cryptocurrency or stock
+        asset_type = "cryptocurrency" if is_crypto_symbol(company_name) else "stock"
+        
         return {
             "messages": [("human", company_name)],
             "company_of_interest": company_name,
             "trade_date": str(trade_date),
+            "asset_type": asset_type,
             "investment_debate_state": InvestDebateState(
                 {"history": "", "current_response": "", "count": 0}
             ),
