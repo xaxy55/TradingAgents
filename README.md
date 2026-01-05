@@ -146,10 +146,11 @@ python -m cli.main
 
 **Python API Example:**
 ```python
+import copy
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 
-config = DEFAULT_CONFIG.copy()
+config = copy.deepcopy(DEFAULT_CONFIG)
 config["crypto_settings"]["default_market"] = "USD"
 
 ta = TradingAgentsGraph(debug=True, config=config)
@@ -159,7 +160,20 @@ _, decision = ta.propagate("BTC", "2024-05-10")
 print(decision)
 ```
 
-The framework automatically detects cryptocurrency symbols and uses appropriate data sources. All analyst agents (technical, sentiment, news, fundamentals where applicable) work seamlessly with crypto assets.
+**Using Google Gemini for Crypto Analysis:**
+```python
+config = copy.deepcopy(DEFAULT_CONFIG)
+config["llm_provider"] = "google"
+config["backend_url"] = "https://generativelanguage.googleapis.com/v1"
+config["deep_think_llm"] = "gemini-2.0-flash"
+config["quick_think_llm"] = "gemini-2.0-flash-lite"
+config["crypto_settings"]["default_market"] = "USD"
+
+ta = TradingAgentsGraph(debug=True, config=config)
+_, decision = ta.propagate("BTC", "2024-05-10")
+```
+
+The framework automatically detects cryptocurrency symbols and uses appropriate data sources. All analyst agents (technical, sentiment, news, fundamentals where applicable) work seamlessly with crypto assets. **Supports multiple LLM providers**: OpenAI, Google Gemini, Anthropic Claude, and more.
 
 ### CLI Usage
 

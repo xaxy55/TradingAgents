@@ -17,7 +17,7 @@ def test_stock_data_tool_routing():
     print("\n=== Testing get_stock_data Tool Routing ===")
     
     from tradingagents.agents.utils.core_stock_tools import get_stock_data
-    from unittest.mock import patch, MagicMock
+    from unittest.mock import patch
     
     # Mock the route_to_vendor function to verify correct routing
     with patch('tradingagents.agents.utils.core_stock_tools.route_to_vendor') as mock_route:
@@ -25,7 +25,7 @@ def test_stock_data_tool_routing():
         
         # Test with a cryptocurrency symbol
         print("\nTesting with BTC (cryptocurrency)...")
-        result = get_stock_data.invoke({
+        get_stock_data.invoke({
             "symbol": "BTC",
             "start_date": "2024-01-01",
             "end_date": "2024-01-31"
@@ -44,7 +44,7 @@ def test_stock_data_tool_routing():
         
         # Test with a stock symbol
         print("\nTesting with AAPL (stock)...")
-        result = get_stock_data.invoke({
+        get_stock_data.invoke({
             "symbol": "AAPL",
             "start_date": "2024-01-01",
             "end_date": "2024-01-31"

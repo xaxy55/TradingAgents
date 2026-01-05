@@ -25,21 +25,30 @@ The system automatically detects cryptocurrency symbols and routes them to the a
 python -m cli.main
 ```
 
-When prompted for a ticker symbol, enter a cryptocurrency symbol like:
-- `BTC` for Bitcoin
-- `ETH` for Ethereum
-- `SOL` for Solana
+When prompted:
+1. **Ticker symbol**: Enter a cryptocurrency symbol like `BTC`, `ETH`, or `SOL`
+2. **LLM Provider**: Select your preferred provider:
+   - **Google** for Gemini models (gemini-2.0-flash, gemini-2.5-pro, etc.)
+   - **OpenAI** for GPT models (gpt-4o, o1, etc.)
+   - **Anthropic** for Claude models (claude-3-5-sonnet, claude-4, etc.)
+3. **Models**: Choose your deep-thinking and quick-thinking models
 
 The framework will automatically detect that it's a cryptocurrency and use the appropriate data sources.
+
+**Note**: You need to set the appropriate API key:
+- For Google Gemini: `GOOGLE_API_KEY`
+- For OpenAI: `OPENAI_API_KEY`
+- For Anthropic: `ANTHROPIC_API_KEY`
 
 ### Using Python API
 
 ```python
+import copy
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 
 # Configure for crypto analysis
-config = DEFAULT_CONFIG.copy()
+config = copy.deepcopy(DEFAULT_CONFIG)
 config["crypto_settings"]["default_market"] = "USD"
 config["data_vendors"]["cryptocurrency_data"] = "alpha_vantage"
 
@@ -52,6 +61,43 @@ print(decision)
 ```
 
 ## Configuration
+
+### LLM Provider Support
+
+Cryptocurrency analysis works with all supported LLM providers:
+
+**Using Google Gemini:**
+```python
+import copy
+from tradingagents.graph.trading_graph import TradingAgentsGraph
+from tradingagents.default_config import DEFAULT_CONFIG
+
+config = copy.deepcopy(DEFAULT_CONFIG)
+config["llm_provider"] = "google"
+config["backend_url"] = "https://generativelanguage.googleapis.com/v1"
+config["deep_think_llm"] = "gemini-2.0-flash"
+config["quick_think_llm"] = "gemini-2.0-flash-lite"
+config["crypto_settings"]["default_market"] = "USD"
+
+ta = TradingAgentsGraph(debug=True, config=config)
+_, decision = ta.propagate("BTC", "2024-05-10")
+```
+
+**Using OpenAI (default):**
+```python
+config["llm_provider"] = "openai"
+config["backend_url"] = "https://api.openai.com/v1"
+config["deep_think_llm"] = "gpt-4o-mini"
+config["quick_think_llm"] = "gpt-4o-mini"
+```
+
+**Using Anthropic Claude:**
+```python
+config["llm_provider"] = "anthropic"
+config["backend_url"] = "https://api.anthropic.com/"
+config["deep_think_llm"] = "claude-3-5-sonnet-latest"
+config["quick_think_llm"] = "claude-3-5-haiku-latest"
+```
 
 ### Crypto-Specific Settings
 

@@ -5,6 +5,7 @@ This example demonstrates how to use TradingAgents to analyze
 cryptocurrencies like Bitcoin and Ethereum.
 """
 
+import copy
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 from dotenv import load_dotenv

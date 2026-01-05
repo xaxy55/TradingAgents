@@ -13,9 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from tradingagents.dataflows.crypto_dataflows import (
     is_crypto_symbol,
-    get_crypto_price_alpha_vantage,
 )
-from tradingagents.agents.utils.crypto_tools import detect_asset_type
 
 
 def test_crypto_symbol_detection():
@@ -37,6 +35,21 @@ def test_crypto_symbol_detection():
         assert not result, f"{symbol} should NOT be detected as crypto"
     
     print("\n✓ All crypto symbol detection tests passed!\n")
+
+
+def test_ambiguous_symbol_detection():
+    """Test detection of symbols that could be both crypto and stock."""
+    print("\n=== Testing Ambiguous Symbol Detection ===")
+    
+    # Test ambiguous symbols - these should NOT be detected as crypto
+    # to avoid misrouting stock data
+    ambiguous_symbols = ['CRO', 'ICP', 'VET', 'NEAR']
+    for symbol in ambiguous_symbols:
+        result = is_crypto_symbol(symbol)
+        print(f"{symbol}: {'✗ Detected as crypto (ambiguous symbol)' if result else '✓ Not detected as crypto (avoiding collision)'}")
+        assert not result, f"{symbol} is ambiguous and should NOT be auto-detected as crypto to avoid stock ticker collision"
+    
+    print("\n✓ All ambiguous symbol detection tests passed!\n")
 
 
 def test_detect_asset_type_tool():
@@ -119,6 +132,28 @@ def test_config_has_crypto_settings():
     print("\n✓ All configuration tests passed!\n")
 
 
+def test_interval_validation():
+    """Test validation of interval parameters."""
+    print("\n=== Testing Interval Validation ===")
+    
+    from tradingagents.dataflows.crypto_dataflows import get_crypto_intraday_alpha_vantage
+    
+    # Test valid intervals - we'll just check the function doesn't error on validation
+    valid_intervals = ["1min", "5min", "15min", "30min", "60min"]
+    print(f"Valid intervals: {', '.join(valid_intervals)}")
+    
+    # Test invalid interval
+    result = get_crypto_intraday_alpha_vantage("BTC", "USD", "2min")
+    assert "Error: Invalid interval" in result, "Should return error for invalid interval"
+    print("✓ Invalid interval '2min' properly rejected")
+    
+    result = get_crypto_intraday_alpha_vantage("BTC", "USD", "invalid")
+    assert "Error: Invalid interval" in result, "Should return error for invalid interval"
+    print("✓ Invalid interval 'invalid' properly rejected")
+    
+    print("\n✓ All interval validation tests passed!\n")
+
+
 def test_crypto_price_data_structure():
     """Test the structure of crypto price data (without API call)."""
     print("\n=== Testing Crypto Price Data Structure ===")
@@ -146,9 +181,11 @@ def main():
     
     try:
         test_crypto_symbol_detection()
+        test_ambiguous_symbol_detection()
         test_detect_asset_type_tool()
         test_crypto_data_routing()
         test_config_has_crypto_settings()
+        test_interval_validation()
         test_crypto_price_data_structure()
         
         print("\n" + "="*60)
