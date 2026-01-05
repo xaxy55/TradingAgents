@@ -395,7 +395,13 @@ def update_display(layout, spinner_text=None):
     layout["footer"].update(Panel(stats_table, border_style="grey50"))
 
 
-def get_user_selections():
+def get_user_selections(
+    ticker: Optional[str] = None,
+    date: Optional[str] = None,
+    llm_provider: Optional[str] = None,
+    analyst: Optional[str] = None,
+    depth: Optional[int] = None,
+):
     """Get all user selections before starting the analysis display."""
     # Display ASCII art welcome message
     with open("./cli/static/welcome.txt", "r") as f:
@@ -435,7 +441,7 @@ def get_user_selections():
             "Step 1: Ticker Symbol", "Enter the ticker symbol to analyze", "SPY"
         )
     )
-    selected_ticker = get_ticker()
+    selected_ticker = ticker if ticker else get_ticker()
 
     # Step 2: Analysis date
     default_date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -446,7 +452,7 @@ def get_user_selections():
             default_date,
         )
     )
-    analysis_date = get_analysis_date()
+    analysis_date = date if date else get_analysis_date()
 
     # Step 3: Select analysts
     console.print(
@@ -454,9 +460,19 @@ def get_user_selections():
             "Step 3: Analysts Team", "Select your LLM analyst agents for the analysis"
         )
     )
-    selected_analysts = select_analysts()
+    if analyst:
+        # Parse analyst from CLI argument
+        analyst_map = {
+            "market": AnalystType.MARKET,
+            "news": AnalystType.NEWS,
+            "social": AnalystType.SOCIAL,
+            "fundamentals": AnalystType.FUNDAMENTALS,
+        }
+        selected_analysts = [analyst_map.get(analyst.lower(), AnalystType.MARKET)]
+    else:
+        selected_analysts = select_analysts()
     console.print(
-        f"[green]Selected analysts:[/green] {', '.join(analyst.value for analyst in selected_analysts)}"
+        f"[green]Selected analysts:[/green] {', '.join(a.value for a in selected_analysts)}"
     )
 
     # Step 4: Research depth
@@ -465,7 +481,7 @@ def get_user_selections():
             "Step 4: Research Depth", "Select your research depth level"
         )
     )
-    selected_research_depth = select_research_depth()
+    selected_research_depth = depth if depth is not None else select_research_depth()
 
     # Step 5: OpenAI backend
     console.print(
@@ -473,7 +489,10 @@ def get_user_selections():
             "Step 5: OpenAI backend", "Select which service to talk to"
         )
     )
-    selected_llm_provider, backend_url = select_llm_provider()
+    if llm_provider:
+        selected_llm_provider, backend_url = llm_provider.upper(), get_backend_url(llm_provider.lower())
+    else:
+        selected_llm_provider, backend_url = select_llm_provider()
     
     # Step 6: Thinking agents
     console.print(
@@ -735,9 +754,26 @@ def extract_content_string(content):
     else:
         return str(content)
 
-def run_analysis():
-    # First get all user selections
-    selections = get_user_selections()
+def run_analysis(
+    ticker: Optional[str] = None,
+    date: Optional[str] = None,
+    llm_provider: Optional[str] = None,
+    analyst: Optional[str] = None,
+    depth: Optional[int] = None,
+):
+    # If any CLI parameters provided, use them; otherwise get user selections
+    if ticker or date or llm_provider or analyst or depth is not None:
+        # Use CLI arguments to build selections
+        selections = get_user_selections(
+            ticker=ticker,
+            date=date,
+            llm_provider=llm_provider,
+            analyst=analyst,
+            depth=depth,
+        )
+    else:
+        # Get all user selections interactively
+        selections = get_user_selections()
 
     # Create config with selected research depth
     config = DEFAULT_CONFIG.copy()
@@ -1101,8 +1137,20 @@ def run_analysis():
 
 
 @app.command()
-def analyze():
-    run_analysis()
+def analyze(
+    ticker: Optional[str] = typer.Option(None, "--ticker", "-t", help="Stock ticker symbol (e.g., SPY)"),
+    date: Optional[str] = typer.Option(None, "--date", "-d", help="Analysis date (YYYY-MM-DD)"),
+    llm_provider: Optional[str] = typer.Option(None, "--llm-provider", "-p", help="LLM provider (google, openai, anthropic)"),
+    analyst: Optional[str] = typer.Option(None, "--analyst", "-a", help="Analyst type (market, news, social, fundamentals)"),
+    depth: Optional[int] = typer.Option(None, "--depth", help="Research depth (0=shallow, 1=medium, 2=deep)"),
+):
+    run_analysis(
+        ticker=ticker,
+        date=date,
+        llm_provider=llm_provider,
+        analyst=analyst,
+        depth=depth
+    )
 
 
 if __name__ == "__main__":
