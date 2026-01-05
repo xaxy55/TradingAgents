@@ -1,9 +1,19 @@
 import time
 import json
 
+from tradingagents.utils.context_budget import (
+    budget_from_config,
+    clamp_many_blocks,
+    truncate_text_tail,
+)
+from tradingagents.dataflows.config import get_config
+
 
 def create_neutral_debator(llm):
     def neutral_node(state) -> dict:
+        config = get_config()
+        budget = budget_from_config(config)
+
         risk_debate_state = state["risk_debate_state"]
         asset_type = state.get("asset_type", "stock")
         history = risk_debate_state.get("history", "")
@@ -18,6 +28,29 @@ def create_neutral_debator(llm):
         fundamentals_report = state["fundamentals_report"]
 
         trader_decision = state["trader_investment_plan"]
+
+        clamped = clamp_many_blocks(
+            [
+                ("trader", trader_decision),
+                ("market", market_research_report),
+                ("sentiment", sentiment_report),
+                ("news", news_report),
+                ("fundamentals", fundamentals_report),
+            ],
+            total_tokens=max(1, budget.content_budget_tokens * 7 // 10),
+        )
+        trader_decision = clamped["trader"]
+        market_research_report = clamped["market"]
+        sentiment_report = clamped["sentiment"]
+        news_report = clamped["news"]
+        fundamentals_report = clamped["fundamentals"]
+        history = truncate_text_tail(history, max(1, budget.content_budget_tokens * 2 // 10))
+        current_risky_response = truncate_text_tail(
+            current_risky_response, max(1, budget.content_budget_tokens // 10)
+        )
+        current_safe_response = truncate_text_tail(
+            current_safe_response, max(1, budget.content_budget_tokens // 10)
+        )
 
         # Add crypto-specific risk considerations
         crypto_guidance = ""
