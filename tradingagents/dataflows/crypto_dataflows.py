@@ -141,7 +141,12 @@ def is_crypto_symbol(symbol: str) -> bool:
     # For these, we avoid confidently classifying them as crypto based
     # solely on the bare symbol to reduce misrouting of stock data.
     # Users should use get_crypto_price directly for these symbols.
-    ambiguous_symbols = {'CRO', 'ICP', 'VET', 'NEAR'}
+    ambiguous_symbols = {
+        'CRO',   # Crypto.com Coin vs Cron (stock ticker)
+        'ICP',   # Internet Computer vs Interceramic (stock ticker)
+        'VET',   # VeChain vs Vermillion Energy (stock ticker)
+        'NEAR',  # NEAR Protocol vs potential stock ticker conflicts
+    }
     
     symbol_upper = symbol.upper()
     
