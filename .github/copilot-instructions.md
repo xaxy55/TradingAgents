@@ -117,7 +117,7 @@ def test_feature_name():
 ### Environment Setup
 
 ```bash
-# Create virtual environment
+# Create virtual environment (Python 3.10+ supported, 3.13 recommended)
 conda create -n tradingagents python=3.13
 conda activate tradingagents
 
