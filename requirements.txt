@@ -25,3 +25,4 @@ questionary
 langchain_anthropic
 langchain-google-genai
 
+urllib3>=2.6.3 # not directly required, pinned by Snyk to avoid a vulnerability
