@@ -1,9 +1,15 @@
 import time
 import json
 
+from tradingagents.utils.context_budget import budget_from_config, truncate_text_tail, truncate_text_middle
+from tradingagents.dataflows.config import get_config
+
 
 def create_risk_manager(llm, memory):
     def risk_manager_node(state) -> dict:
+
+        config = get_config()
+        budget = budget_from_config(config)
 
         company_name = state["company_of_interest"]
 
@@ -11,7 +17,7 @@ def create_risk_manager(llm, memory):
         risk_debate_state = state["risk_debate_state"]
         market_research_report = state["market_report"]
         news_report = state["news_report"]
-        fundamentals_report = state["news_report"]
+        fundamentals_report = state["fundamentals_report"]
         sentiment_report = state["sentiment_report"]
         trader_plan = state["investment_plan"]
 
@@ -21,6 +27,12 @@ def create_risk_manager(llm, memory):
         past_memory_str = ""
         for i, rec in enumerate(past_memories, 1):
             past_memory_str += rec["recommendation"] + "\n\n"
+
+        history = truncate_text_tail(history, max(1, budget.content_budget_tokens * 7 // 10))
+        past_memory_str = truncate_text_middle(
+            past_memory_str, max(1, budget.content_budget_tokens * 2 // 10)
+        )
+        trader_plan = truncate_text_middle(trader_plan, max(1, budget.content_budget_tokens // 5))
 
         prompt = f"""As the Risk Management Judge and Debate Facilitator, your goal is to evaluate the debate between three risk analysts—Risky, Neutral, and Safe/Conservative—and determine the best course of action for the trader. Your decision must result in a clear recommendation: Buy, Sell, or Hold. Choose Hold only if strongly justified by specific arguments, not as a fallback when all sides seem valid. Strive for clarity and decisiveness.
 

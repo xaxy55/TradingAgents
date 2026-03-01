@@ -2,9 +2,15 @@ import functools
 import time
 import json
 
+from tradingagents.utils.context_budget import budget_from_config, truncate_text_middle
+from tradingagents.dataflows.config import get_config
+
 
 def create_trader(llm, memory):
     def trader_node(state, name):
+        config = get_config()
+        budget = budget_from_config(config)
+
         company_name = state["company_of_interest"]
         asset_type = state.get("asset_type", "stock")
         investment_plan = state["investment_plan"]
@@ -22,6 +28,14 @@ def create_trader(llm, memory):
                 past_memory_str += rec["recommendation"] + "\n\n"
         else:
             past_memory_str = "No past memories found."
+
+        # Clamp potentially huge blocks.
+        past_memory_str = truncate_text_middle(
+            past_memory_str, max(1, budget.content_budget_tokens * 2 // 10)
+        )
+        investment_plan = truncate_text_middle(
+            investment_plan, max(1, budget.content_budget_tokens * 6 // 10)
+        )
 
         # Build context based on asset type
         if asset_type == "cryptocurrency":

@@ -13,6 +13,12 @@ DEFAULT_CONFIG = {
     "deep_think_llm": "gemini-2.0-flash",
     "quick_think_llm": "gemini-2.0-flash",
     "backend_url": "https://generativelanguage.googleapis.com/v1",
+    # Prompt budgeting (prevents "input length exceeds context" errors)
+    # These are approximate budgets; large reports/histories will be truncated.
+    "llm_max_input_tokens": 12000,
+    "llm_reserved_output_tokens": 2048,
+    # Embedding input budget (kept conservative for common embedding models)
+    "embedding_max_input_tokens": 6000,
     # Debate and discussion settings
     "max_debate_rounds": 1,
     "max_risk_discuss_rounds": 1,
